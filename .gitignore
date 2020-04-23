@@ -1,0 +1,9 @@
+.vscode
+*.o
+.clang-format
+run.sh
+.DS_Store
+lispy
+.obj/
+build/
+test_build/
