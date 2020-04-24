@@ -16,7 +16,7 @@ TEST_EXEC = all_test
 _TEST_DEPS = unity.h unity_internals.h test.h
 TEST_DEPS = $(patsubst %,$(TEST_SRC_DIR)/%,$(_DEPS))
 
-_TEST_OBJS = test.o test_val.o unity.o
+_TEST_OBJS = test.o val_test.o unity.o
 $(shell mkdir -p $(TEST_OBJS_DIR))
 TEST_OBJS = $(patsubst %,$(TEST_OBJS_DIR)/%,$(_TEST_OBJS))
 
