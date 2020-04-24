@@ -1,4 +1,4 @@
-#include "val.h"
+#include "../include/val.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>

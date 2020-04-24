@@ -2,14 +2,15 @@ CC = gcc
 CFLAGS = -std=c11 -Wall -Wextra -Werror  -pedantic 
 LIBS = 
 
+INCLUDE_DIR = include
 SRC_DIR = src
 
-BUILD_DIR = build
+BUILD_DIR = ./build
 OBJS_DIR = $(BUILD_DIR)/.objs
 MAIN_EXEC = misp
 
 _DEPS = val.h
-DEPS = $(patsubst %,$(SRC_DIR)/%,$(_DEPS))
+DEPS = $(patsubst %,$(INCLUDE_DIR)/%,$(_DEPS))
 
 _OBJS = main.o val.o
 $(shell mkdir -p $(OBJS_DIR))
