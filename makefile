@@ -22,6 +22,9 @@ $(OBJS_DIR)/%.o: $(SRC_DIR)/%.c $(DEPS)
 $(MAIN_EXEC): $(OBJS)
 	$(CC) -o $(BUILD_DIR)/$@ $^ $(CFLAGS) $(LIBS)
 
+run: $(MAIN_EXEC)
+	@$(BUILD_DIR)/$(MAIN_EXEC)
+
 .PHONY: test
 
 test:

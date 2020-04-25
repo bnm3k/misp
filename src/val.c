@@ -1,9 +1,11 @@
-#include "../include/val.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "../include/khash.h"
+#include "../include/val.h"
 
 Value *allocate_value() {
     Value *vp = malloc(sizeof(Value));
@@ -39,11 +41,32 @@ Value *make_int(long n) {
     return v;
 }
 
+/**
+ * 
+*/
+KHASH_MAP_INIT_STR(sym, Value *)
 Value *make_sym(const char *s) {
-    Value *v = allocate_value();
-    v->type = IS_SYMBOL;
-    v->content.sym = strdup(s);
-    return v;
+    /*
+     *  TODO move init for sym_table to overall evaluator init fn 
+     *  plus also destroy for khash table
+    */
+    static khash_t(sym) *sym_table = NULL;
+    if (sym_table == NULL) sym_table = kh_init(sym);
+
+    Value *val_sym = NULL;
+    khint_t it = kh_get(sym, sym_table, s);
+    /* if val not present, allocate and insert first*/
+    if (it == kh_end(sym_table)) {
+        int ret;
+        val_sym = allocate_value();
+        val_sym->type = IS_SYMBOL;
+        val_sym->content.sym = strdup(s);
+        it = kh_put(sym, sym_table, s, &ret);
+        kh_val(sym_table, it) = val_sym;
+    } else {
+        val_sym = kh_val(sym_table, it);
+    }
+    return val_sym;
 }
 
 Value *make_err(const char *s) {
