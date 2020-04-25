@@ -27,7 +27,7 @@ void deallocate_value(Value *vp) {
         free(vp->content.str);
         break;
     case IS_LIST:
-    case IS_EXPR:
+    case IS_S_EXPR:
         /* TODO traverse list and deallocate each item */
         break;
     }
@@ -83,9 +83,9 @@ Value *make_list() {
     return v;
 }
 
-Value *make_expr() {
+Value *make_s_expr() {
     Value *v = make_list();
-    v->type = IS_EXPR;
+    v->type = IS_S_EXPR;
     return v;
 }
 
@@ -93,7 +93,7 @@ Value *make_expr() {
  * Appends item Value v to front of list l
 */
 Value *list_push_to_front(Value *l, Value *v) {
-    assert(l->type == IS_LIST || l->type == IS_EXPR);
+    assert(l->type == IS_LIST || l->type == IS_S_EXPR);
     assert(v->next == NIL);
     v->next = l->content.list;
     l->content.list = v;
@@ -104,7 +104,7 @@ Value *list_push_to_front(Value *l, Value *v) {
  * Does not modify rest of list
 */
 Value *list_head(const Value *v) {
-    assert(v->type == IS_LIST || v->type == IS_EXPR);
+    assert(v->type == IS_LIST || v->type == IS_S_EXPR);
     Value *head = v->content.list;
     return head;
 }
@@ -116,7 +116,7 @@ Value *list_head(const Value *v) {
  * empty list, ie list whose only value is NIL
 */
 Value *list_rest(Value *v) {
-    assert(v->type == IS_LIST || v->type == IS_EXPR);
+    assert(v->type == IS_LIST || v->type == IS_S_EXPR);
     Value *head = v->content.list;
     if (head == NIL) {
         /* do something sensible, eg return error value */
@@ -188,9 +188,9 @@ int stringify_val(char *buf, int buf_len, const Value *v, const char *sep) {
     case IS_ERROR:
         total_chars_written = snprintf(buf, buf_len, "%s%s", v->content.str, sep);
         break;
-    case IS_EXPR:
+    case IS_S_EXPR:
     case IS_LIST:
-        total_chars_written = snprintf(buf, buf_len, "%s", v->type == IS_EXPR ? "(" : "'(");
+        total_chars_written = snprintf(buf, buf_len, "%s", v->type == IS_S_EXPR ? "(" : "'(");
         buf_len = buf_len - total_chars_written;
         int chars_written = 0;
         sep = " ";

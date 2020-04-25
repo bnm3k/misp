@@ -30,7 +30,7 @@ void test_stringify_val_sufficient_buf_size(void) {
 
     Value *n1 = make_int(1), *n2 = make_int(2), *n3 = make_int(3);
     Value *l1 = make_list();
-    Value *l2 = make_expr();
+    Value *l2 = make_s_expr();
 
     /* test empty lists and expressions */
     chars_written = stringify_val(buf, buf_len, l1, NULL);

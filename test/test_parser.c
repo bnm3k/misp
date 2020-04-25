@@ -4,7 +4,7 @@
 #include <assert.h>
 
 void test_single_input_validity(const char *str, bool is_valid) {
-    parse_result_t *p = parse(str);
+    parse_result_t *p = parse_str_to_ast(str);
     if (p != NULL) {
         TEST_ASSERT(p->no_err_occurred == is_valid);
         parse_res_cleanup(p);
@@ -14,9 +14,9 @@ void test_single_input_validity(const char *str, bool is_valid) {
 }
 
 void test_parser_valid_inputs(void) {
-#define valid_inputs_len 5
+#define valid_inputs_len 6
     const char *valid_inputs[valid_inputs_len] = {
-        "1", "()",
+        "1", "()", "NIL",
         "(+ 1 2 3)",
         "+ 5 (* 2 2)",
         "(map - '(1 2 3 4))"};

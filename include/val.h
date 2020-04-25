@@ -16,7 +16,7 @@ enum val_type {
     IS_SYMBOL,
     IS_ERROR,
     IS_LIST,
-    IS_EXPR
+    IS_S_EXPR
 };
 
 struct Value;
@@ -42,7 +42,7 @@ Value *make_int(long n);
 Value *make_sym(const char *s);
 Value *make_err(const char *s);
 Value *make_list();
-Value *make_expr();
+Value *make_s_expr();
 
 /* lisp/expr methods */
 Value *list_push_to_front(Value *l, Value *v);

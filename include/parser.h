@@ -32,7 +32,7 @@ typedef struct parse_result_t {
 */
 
 void parser_init();
-parse_result_t *parse(const char *input);
+parse_result_t *parse_str_to_ast(const char *input);
 void parse_res_cleanup(parse_result_t *p_res);
 void parser_cleanup();
 
