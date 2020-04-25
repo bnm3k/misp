@@ -59,6 +59,26 @@ void test_stringify_val_sufficient_buf_size(void) {
     /* TODO deallocate vals */
 }
 
+void test_stringify_val_insufficient_buf_size(void) {
+    TEST_IGNORE_MESSAGE("TODO");
+}
+
+void test_identical_symbols_eval_to_same_value(void) {
+    Value *s1 = make_sym("foo_sym");
+    Value *s2 = make_sym("bar_sym");
+    Value *s3 = make_sym("foo_sym");
+    Value *s4 = make_sym("baz_sym");
+    Value *s5 = make_sym("foo_sym");
+    TEST_ASSERT_EQUAL_PTR(s1, s3);
+    TEST_ASSERT_EQUAL_PTR(s1, s5);
+    TEST_ASSERT_TRUE(s1 != s2);
+    TEST_ASSERT_TRUE(s1 != s4);
+    TEST_ASSERT_TRUE(s2 != s4);
+    /* TODO deallocate vals */
+}
+
 void test_val(void) {
     RUN_TEST(test_stringify_val_sufficient_buf_size);
+    RUN_TEST(test_stringify_val_insufficient_buf_size);
+    RUN_TEST(test_identical_symbols_eval_to_same_value);
 }
