@@ -10,17 +10,24 @@ static mpc_parser_t *List;
 static mpc_parser_t *Expr;
 static mpc_parser_t *Misp;
 
-void parser_init() {
-    static bool already_init = false;
-    if (already_init == false) {
-        Number = mpc_new("number");
-        Symbol = mpc_new("symbol");
-        S_Expr = mpc_new("s_expr");
-        List = mpc_new("list");
-        Expr = mpc_new("expr");
-        Misp = mpc_new("misp");
+/*
+ *  here to ensyre that  parser_init & parser_cleanup 
+ * are called in the required order 
+*/
+static bool already_init = false;
+static bool already_cleanup = false;
 
-        mpca_lang(MPCA_LANG_DEFAULT, "\
+void parser_init() {
+    assert(already_init == false);
+
+    Number = mpc_new("number");
+    Symbol = mpc_new("symbol");
+    S_Expr = mpc_new("s_expr");
+    List = mpc_new("list");
+    Expr = mpc_new("expr");
+    Misp = mpc_new("misp");
+
+    mpca_lang(MPCA_LANG_DEFAULT, "\
             number  : /-?[0-9]+/ ; \
             symbol  : /[a-zA-Z0-9_+\\-*\\/\\\\=<>!&]+/ ;\
             s_expr  : '(' <expr>* ')' ;\
@@ -28,10 +35,10 @@ void parser_init() {
             expr    : <number> | <symbol> | <s_expr> | <list> ;\
             misp    : /^/ <expr>* /$/ ;\
             ",
-                  Number, Symbol, S_Expr, List, Expr, Misp);
+              Number, Symbol, S_Expr, List, Expr, Misp);
 
-        already_init = true;
-    }
+    already_cleanup = false;
+    already_init = true;
 }
 
 parse_result_t *parse(const char *input) {
@@ -58,9 +65,9 @@ void parse_res_cleanup(parse_result_t *p_res) {
 }
 
 void parser_cleanup() {
-    static bool already_cleanup = false;
-    if (!already_cleanup) {
-        mpc_cleanup(6, Number, Symbol, S_Expr, List, Expr, Misp);
-        already_cleanup = true;
-    }
+    assert(already_init == true);
+    assert(already_cleanup == false);
+    mpc_cleanup(6, Number, Symbol, S_Expr, List, Expr, Misp);
+    already_init = false;
+    already_cleanup = true;
 }
