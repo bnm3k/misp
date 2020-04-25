@@ -2,21 +2,22 @@ CC = gcc
 CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic 
 LIBS = 
 
-MAIN_BUILD_DIR = ../build
-MAIN_OBJS_DIR = $(MAIN_BUILD_DIR)/.objs
+MAIN_OBJS_DIR = ../build/.objs
 
-_MAIN_OBJS = val.o
+_MAIN_OBJS := $(shell ls ../build/.objs/ | grep .o | grep -v main.o)
 MAIN_OBJS = $(patsubst %,$(MAIN_OBJS_DIR)/%,$(_MAIN_OBJS))
 
+
 TEST_SRC_DIR = .
+TEST_INCLUDE_DIR = $(TEST_SRC_DIR)/test_include
 TEST_BUILD_DIR = ./test_build
 TEST_OBJS_DIR = $(TEST_BUILD_DIR)/.objs
 TEST_EXEC = all_test
 
-_TEST_DEPS = unity.h unity_internals.h test.h
-TEST_DEPS = $(patsubst %,$(TEST_SRC_DIR)/%,$(_DEPS))
+_TEST_DEPS := $(shell ls $(TEST_INCLUDE_DIR))
+TEST_DEPS = $(patsubst %,$(TEST_INCLUDE_DIR)/%,$(_DEPS))
 
-_TEST_OBJS = test.o val_test.o unity.o
+_TEST_OBJS = unity.o test.o test_val.o test_parser.o
 $(shell mkdir -p $(TEST_OBJS_DIR))
 TEST_OBJS = $(patsubst %,$(TEST_OBJS_DIR)/%,$(_TEST_OBJS))
 

@@ -2,5 +2,6 @@
 #define _TEST_H_
 
 void test_val(void);
+void test_parser(void);
 
 #endif

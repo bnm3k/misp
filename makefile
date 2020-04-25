@@ -9,10 +9,10 @@ BUILD_DIR = ./build
 OBJS_DIR = $(BUILD_DIR)/.objs
 MAIN_EXEC = misp
 
-_DEPS = val.h
+_DEPS = val.h khash.h mpc.h
 DEPS = $(patsubst %,$(INCLUDE_DIR)/%,$(_DEPS))
 
-_OBJS = main.o val.o
+_OBJS = main.o mpc.o val.o parser.o
 $(shell mkdir -p $(OBJS_DIR))
 OBJS = $(patsubst %,$(OBJS_DIR)/%,$(_OBJS))
 
