@@ -12,7 +12,7 @@ MAIN_EXEC = misp
 _DEPS := $(shell ls $(INCLUDE_DIR) | grep .h)
 DEPS = $(patsubst %,$(INCLUDE_DIR)/%,$(_DEPS))
 
-_OBJS = main.o mpc.o val.o parser.o evaluator.o
+_OBJS = main.o mpc.o val.o parser.o evaluator.o list.o
 $(shell mkdir -p $(OBJS_DIR))
 OBJS = $(patsubst %,$(OBJS_DIR)/%,$(_OBJS))
 

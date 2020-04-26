@@ -17,7 +17,7 @@ TEST_EXEC = all_test
 _TEST_DEPS := $(shell ls $(TEST_INCLUDE_DIR))
 TEST_DEPS = $(patsubst %,$(TEST_INCLUDE_DIR)/%,$(_DEPS))
 
-_TEST_OBJS = unity.o test.o test_val.o test_parser.o
+_TEST_OBJS = unity.o test.o test_val.o test_parser.o test_list.o
 $(shell mkdir -p $(TEST_OBJS_DIR))
 TEST_OBJS = $(patsubst %,$(TEST_OBJS_DIR)/%,$(_TEST_OBJS))
 

@@ -3,5 +3,6 @@
 
 void test_val(void);
 void test_parser(void);
+void test_list(void);
 
 #endif
