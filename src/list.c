@@ -36,6 +36,15 @@ void delete_list(List *l) {
     free(l);
 }
 
+List *list_shallow_copy(const List *l) {
+    List *l_copy = new_list();
+    void *vp;
+    list_foreach(l, vp, {
+        list_push_to_back(l_copy, vp);
+    });
+    return l_copy;
+}
+
 void list_push_to_front(List *l, void *vp) {
     assert(l->curr_size <= l->capacity);
     /* check first if full */

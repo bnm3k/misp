@@ -146,9 +146,31 @@ void test_list_pop_items(void) {
     delete_list(l);
 }
 
+void test_list_shallow_copy(void) {
+    List *l1 = new_list();
+    Value *v_l1;
+    for (int i = 0; i < 20; i++) {
+        list_push_to_back(l1, make_int(i));
+    }
+    List *l2 = list_shallow_copy(l1);
+    TEST_ASSERT_EQUAL_INT(list_get_count(l1), list_get_count(l2));
+    Value *popped_l2;
+    list_foreach(l1, v_l1, {
+        popped_l2 = list_pop_from_front(l2);
+        TEST_ASSERT_EQUAL_PTR(v_l1, popped_l2);
+    });
+
+    list_foreach(l1, v_l1, {
+        deallocate_value(v_l1);
+    });
+    delete_list(l1);
+    delete_list(l2);
+}
+
 void test_list(void) {
     RUN_TEST(test_list_basics);
     RUN_TEST(test_list_insert_100_items_from_back);
     RUN_TEST(test_list_insert_100_items_from_front);
     RUN_TEST(test_list_pop_items);
+    RUN_TEST(test_list_shallow_copy);
 }

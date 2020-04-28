@@ -11,6 +11,7 @@ typedef struct List {
 
 List *new_list();
 void delete_list(List *l);
+List *list_shallow_copy(const List *);
 void list_push_to_front(List *l, void *vp);
 void list_push_to_back(List *l, void *vp);
 void *list_pop_from_front(List *l);
