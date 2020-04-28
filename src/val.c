@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../include/debug.h"
 #include "../include/khash.h"
+#include "../include/list.h"
 #include "../include/val.h"
 
 Value *allocate_value() {
@@ -13,22 +15,27 @@ Value *allocate_value() {
         printf("Insufficient memory");
         exit(0);
     }
-    vp->next = NIL;
     return vp;
 }
 
 void deallocate_value(Value *vp) {
+    Value *child;
     switch (vp->type) {
-    case IS_NIL:
-    case IS_INT:
+        /* sym vals freed once, at end of program from sym_table, NIL is singleton */
     case IS_SYMBOL:
+    case IS_NIL:
+        return;
+    case IS_INT:
         break;
     case IS_ERROR:
         free(vp->content.str);
         break;
     case IS_LIST:
     case IS_S_EXPR:
-        /* TODO traverse list and deallocate each item */
+        list_foreach(vp->content.list, child, {
+            deallocate_value(child);
+        });
+        delete_list(vp->content.list);
         break;
     }
     free(vp);
@@ -79,7 +86,7 @@ Value *make_err(const char *s) {
 Value *make_list() {
     Value *v = allocate_value();
     v->type = IS_LIST;
-    v->content.list = NIL;
+    v->content.list = new_list();
     return v;
 }
 
@@ -92,21 +99,28 @@ Value *make_s_expr() {
 /*
  * Appends item Value v to front of list l
 */
-Value *list_push_to_front(Value *l, Value *v) {
+Value *builtin_list_push_to_front(Value *l, Value *v) {
     assert(l->type == IS_LIST || l->type == IS_S_EXPR);
-    assert(v->next == NIL);
-    v->next = l->content.list;
-    l->content.list = v;
+    list_push_to_front(l->content.list, v);
     return l;
 }
+
+/*
+ * Appends item Value v to front of list l
+*/
+Value *builtin_list_push_to_back(Value *l, Value *v) {
+    assert(l->type == IS_LIST || l->type == IS_S_EXPR);
+    list_push_to_back(l->content.list, v);
+    return l;
+}
+
 /*
  * Returns the first value of a list/expr
  * Does not modify rest of list
 */
-Value *list_head(const Value *v) {
-    assert(v->type == IS_LIST || v->type == IS_S_EXPR);
-    Value *head = v->content.list;
-    return head;
+Value *builtin_list_head(const Value *l) {
+    assert(l->type == IS_LIST || l->type == IS_S_EXPR);
+    return list_get_head(l->content.list);
 }
 
 /*
@@ -115,32 +129,12 @@ Value *list_head(const Value *v) {
  * Caller should ensure that they are not calling an
  * empty list, ie list whose only value is NIL
 */
-Value *list_rest(Value *v) {
-    assert(v->type == IS_LIST || v->type == IS_S_EXPR);
-    Value *head = v->content.list;
-    if (head == NIL) {
-        /* do something sensible, eg return error value */
-    } else {
-        v->content.list = head->next;
-        deallocate_value(head);
-    }
-    return v;
-}
-
-/*
- * Given a list/expr value, calls fn on each item except 
- * the last item, NIL. fn should not modify any value it's 
- * supplied with. furthermore, if the caller wishes to halt
- * traversal, they should return a false value otherwise
- * traversal proceeds til NIL is encountered
-*/
-void list_traverse(const Value *l, bool (*fn)(const Value *v)) {
-    const Value *v = list_head(l);
-    bool should_continue = true;
-    while (v != NIL && should_continue) {
-        should_continue = fn(v);
-        v = v->next;
-    }
+Value *builtin_list_rest(Value *l) {
+    assert(l->type == IS_LIST || l->type == IS_S_EXPR);
+    assert(list_get_count(l->content.list) > 0);
+    Value *popped = list_pop_from_front(l->content.list);
+    deallocate_value(popped);
+    return l;
 }
 
 /*
@@ -203,14 +197,16 @@ int stringify_val(char *buf, int buf_len, const Value *v, const char *sep) {
          * calls to snprintf are partial(failed ie not all chars written)
          * if (buf_len <= chars_written) == (buf_len - chars_written <= 0) 
         */
-        for (const Value *c = list_head(v); c != NIL; c = c->next) {
-            /* dont add space after last val*/
-            if (c->next == NIL) sep = "";
+        Value *c;
+        int i = 1;
+        list_foreach(v->content.list, c, {
+            if (i == list_get_count(v->content.list)) sep = ""; /* if last elem of list */
             if (chars_written < 0 || buf_len <= 0) return -1;
             chars_written = stringify_val(buf + total_chars_written, buf_len, c, sep);
             buf_len = buf_len - chars_written;
             total_chars_written += chars_written;
-        }
+            i++;
+        });
         total_chars_written += snprintf(buf + total_chars_written, buf_len, ")");
         break;
     }

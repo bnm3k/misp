@@ -7,6 +7,7 @@
 #ifndef _VAL_H_
 #define _VAL_H_
 
+#include "list.h"
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -19,22 +20,19 @@ enum val_type {
     IS_S_EXPR
 };
 
-struct Value;
-
 union val_content {
     long integer;
     const char *sym;
     char *str;
-    struct Value *list;
+    List *list;
 };
 
 typedef struct Value {
     enum val_type type;
     union val_content content;
-    struct Value *next;
 } Value;
 
-static Value NIL_VAL = {IS_NIL, {0}, NULL};
+static Value NIL_VAL = {IS_NIL, {0}};
 static Value *const NIL = &NIL_VAL;
 
 /* for creating misp values */
@@ -43,12 +41,14 @@ Value *make_sym(const char *s);
 Value *make_err(const char *s);
 Value *make_list();
 Value *make_s_expr();
+void deallocate_value(Value *vp);
 
 /* lisp/expr methods */
-Value *list_push_to_front(Value *l, Value *v);
-Value *list_head(const Value *v);
-Value *list_rest(Value *v);
-void list_traverse(const Value *l, bool (*fn)(const Value *v));
+Value *builtin_list_push_to_front(Value *l, Value *v);
+Value *builtin_list_push_to_back(Value *l, Value *v);
+Value *builtin_list_head(const Value *l);
+Value *builtin_list_rest(Value *l);
+
 int stringify_val(char *buf, int buf_len, const Value *v, const char *sep);
 
 #endif
