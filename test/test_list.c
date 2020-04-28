@@ -8,27 +8,27 @@ void test_list_basics(void) {
     TEST_ASSERT_EQUAL_INT(0, list_get_count(l));
 
     list_push_to_front(l, make_int(200));
-    TEST_ASSERT_EQUAL_INT(200, list_get_head(l)->content.integer);
+    TEST_ASSERT_EQUAL_INT(200, ((Value *)list_get_head(l))->content.integer);
     TEST_ASSERT_EQUAL_INT(1, list_get_count(l));
 
     list_push_to_back(l, make_int(91));
-    TEST_ASSERT_EQUAL_INT(200, list_get_head(l)->content.integer);
+    TEST_ASSERT_EQUAL_INT(200, ((Value *)list_get_head(l))->content.integer);
     TEST_ASSERT_EQUAL_INT(2, list_get_count(l));
 
     list_push_to_front(l, make_int(300));
-    TEST_ASSERT_EQUAL_INT(300, list_get_head(l)->content.integer);
+    TEST_ASSERT_EQUAL_INT(300, ((Value *)list_get_head(l))->content.integer);
     TEST_ASSERT_EQUAL_INT(3, list_get_count(l));
 
     list_push_to_back(l, make_int(92));
-    TEST_ASSERT_EQUAL_INT(300, list_get_head(l)->content.integer);
+    TEST_ASSERT_EQUAL_INT(300, ((Value *)list_get_head(l))->content.integer);
     TEST_ASSERT_EQUAL_INT(4, list_get_count(l));
 
     list_push_to_front(l, make_int(400));
-    TEST_ASSERT_EQUAL_INT(400, list_get_head(l)->content.integer);
+    TEST_ASSERT_EQUAL_INT(400, ((Value *)list_get_head(l))->content.integer);
     TEST_ASSERT_EQUAL_INT(5, list_get_count(l));
 
     list_push_to_back(l, make_int(93));
-    TEST_ASSERT_EQUAL_INT(400, list_get_head(l)->content.integer);
+    TEST_ASSERT_EQUAL_INT(400, ((Value *)list_get_head(l))->content.integer);
     TEST_ASSERT_EQUAL_INT(6, list_get_count(l));
 
     //   400-300-200-91-92-93
@@ -61,7 +61,7 @@ void test_list_insert_100_items_from_back(void) {
         i++;
     });
     TEST_ASSERT_EQUAL_INT(100, l->curr_size);
-    TEST_ASSERT_EQUAL_INT(0, list_get_head(l)->content.integer);
+    TEST_ASSERT_EQUAL_INT(0, ((Value *)list_get_head(l))->content.integer);
 
     free(arr);
     list_foreach(l, curr_list_elem, {
@@ -95,7 +95,7 @@ void test_list_insert_100_items_from_front(void) {
     });
 
     TEST_ASSERT_EQUAL_INT(100, l->curr_size);
-    TEST_ASSERT_EQUAL_INT(99, list_get_head(l)->content.integer);
+    TEST_ASSERT_EQUAL_INT(99, ((Value *)list_get_head(l))->content.integer);
 
     free(arr);
     list_foreach(l, curr_list_elem, {
