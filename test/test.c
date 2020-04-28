@@ -10,5 +10,6 @@ int main(void) {
     test_list();
     test_val();
     test_parser();
+    test_environment();
     return UNITY_END();
 }
