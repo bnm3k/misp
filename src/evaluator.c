@@ -1,5 +1,5 @@
 #include "../include/evaluator.h"
-#include "../include/list.h"
+
 #include "../include/mpc.h"
 #include "../include/val.h"
 #include <assert.h>
@@ -25,7 +25,7 @@ Value *ast_to_val(const mpc_ast_t *t) {
         if (strcmp(t->children[i]->contents, ")") == 0) continue;
         if (strcmp(t->children[i]->contents, "'(") == 0) continue;
         if (strcmp(t->children[i]->tag, "regex") == 0) continue;
-        list_push_to_back(l->content.list, ast_to_val(t->children[i]));
+        builtin_list_push_to_back(l, ast_to_val(t->children[i]));
     }
 
     return l;
