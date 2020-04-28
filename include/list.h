@@ -24,28 +24,28 @@ struct Value *list_pop_from_back(List *l);
 
 #define list_get_head(list) list->elements[list->first]
 
-#define list_foreach(list, value_ptr_var, code)  \
-    {                                            \
-        int pos = list->first;                   \
-        int elems = list_get_count(list);        \
-        while (elems--) {                        \
-            value_ptr_var = list->elements[pos]; \
-            code;                                \
-            if (pos == list->last) break;        \
-            pos = MOD(pos + 1, list->capacity);  \
-        }                                        \
+#define list_foreach(list, value_ptr_var, code)      \
+    {                                                \
+        int pos = list->first;                       \
+        if (list->curr_size > 0)                     \
+            while (1) {                              \
+                value_ptr_var = list->elements[pos]; \
+                code;                                \
+                if (pos == list->last) break;        \
+                pos = MOD(pos + 1, list->capacity);  \
+            }                                        \
     }
 
 #define list_foreach_reverse(list, value_ptr_var, code) \
     {                                                   \
         int pos = list->last;                           \
-        int elems = list_get_count(list);               \
-        while (elems--) {                               \
-            value_ptr_var = list->elements[pos];        \
-            code;                                       \
-            if (pos == list->first) break;              \
-            pos = MOD(pos - 1, list->capacity);         \
-        }                                               \
+        if (list->curr_size > 0)                        \
+            while (1) {                                 \
+                value_ptr_var = list->elements[pos];    \
+                code;                                   \
+                if (pos == list->first) break;          \
+                pos = MOD(pos - 1, list->capacity);     \
+            }                                           \
     }
 
 #endif
