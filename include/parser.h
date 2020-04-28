@@ -6,10 +6,10 @@
 /*
  * 
 */
-typedef struct parse_result_t {
+typedef struct parse_result {
     bool no_err_occurred;
     mpc_result_t *r;
-} parse_result_t;
+} parse_result;
 
 /*
  * Quick note on usage. The grammar is defined in parser.c, any
@@ -31,9 +31,18 @@ typedef struct parse_result_t {
  * 
 */
 
-void parser_init();
-parse_result_t *parse_str_to_ast(const char *input);
-void parse_res_cleanup(parse_result_t *p_res);
-void parser_cleanup();
+typedef struct parser {
+    mpc_parser_t *Int;
+    mpc_parser_t *Symbol;
+    mpc_parser_t *S_Expr;
+    mpc_parser_t *List;
+    mpc_parser_t *Expr;
+    mpc_parser_t *Misp;
+} parser;
+
+parser *new_parser();
+parse_result *parse_str_to_ast(parser *p, const char *input);
+void parse_res_cleanup(parse_result *p_res);
+void delete_parser(parser *p);
 
 #endif

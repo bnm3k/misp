@@ -38,20 +38,20 @@ void delete_env(environment *env) {
 
 void env_set(environment *env, Value *sym_val, Value *v) {
     int absent;
-    khiter_t iter = kh_put(sym_to_val, env->htable, sym_val->content.sym, &absent);
+    khiter_t iter = kh_put(sym_to_val, env->htable, sym_val->content.str, &absent);
     //if (absent)
     kh_val(env->htable, iter) = v;
 }
 
 Value *env_get(const environment *env, Value *sym_val) {
-    khiter_t iter = kh_get(sym_to_val, env->htable, sym_val->content.sym);
+    khiter_t iter = kh_get(sym_to_val, env->htable, sym_val->content.str);
     if (iter != kh_end(env->htable))
         return kh_val(env->htable, iter);
 
     /* check if sym in parent */
     const environment *parent;
     list_foreach(env->res_chain_list, parent, {
-        iter = kh_get(sym_to_val, parent->htable, sym_val->content.sym);
+        iter = kh_get(sym_to_val, parent->htable, sym_val->content.str);
         if (iter != kh_end(parent->htable))
             return kh_val(parent->htable, iter);
     });

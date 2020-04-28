@@ -5,7 +5,7 @@
 
 void test_environemnt_single_layer_resolution(void) {
     environment *env = new_env(NULL);
-    Value *identifier = make_sym("foo");
+    Value *identifier = make_sym_interned(NULL, "foo");
     Value *num_literal = make_int(9000);
     env_set(env, identifier, num_literal);
     Value *gotten = env_get(env, identifier);
@@ -23,9 +23,9 @@ void test_environemnt_multiple_layer_resolution(void) {
     environment *env3 = new_env(env2);
     environment *env4 = new_env(env3);
 
-    Value *id1 = make_sym("foo");
-    Value *id2 = make_sym("bar");
-    Value *id3 = make_sym("baz");
+    Value *id1 = make_sym_interned(NULL, "foo");
+    Value *id2 = make_sym_interned(NULL, "bar");
+    Value *id3 = make_sym_interned(NULL, "baz");
     Value *n1 = make_int(8000);
     Value *n2 = make_int(7000);
     Value *n3 = make_int(6000);

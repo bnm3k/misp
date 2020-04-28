@@ -3,29 +3,19 @@
 #include <assert.h>
 #include <stdbool.h>
 
-static mpc_parser_t *Int;
-static mpc_parser_t *Symbol;
-static mpc_parser_t *S_Expr;
-static mpc_parser_t *List;
-static mpc_parser_t *Expr;
-static mpc_parser_t *Misp;
-
 /*
  *  here to ensyre that  parser_init & parser_cleanup 
  * are called in the required order 
 */
-static bool already_init = false;
-static bool already_cleanup = false;
 
-void parser_init() {
-    assert(already_init == false);
-
-    Int = mpc_new("int");
-    Symbol = mpc_new("symbol");
-    S_Expr = mpc_new("s_expr");
-    List = mpc_new("list");
-    Expr = mpc_new("expr");
-    Misp = mpc_new("misp");
+parser *new_parser() {
+    parser *p = malloc(sizeof(parser));
+    p->Int = mpc_new("int");
+    p->Symbol = mpc_new("symbol");
+    p->S_Expr = mpc_new("s_expr");
+    p->List = mpc_new("list");
+    p->Expr = mpc_new("expr");
+    p->Misp = mpc_new("misp");
 
     mpca_lang(MPCA_LANG_DEFAULT, "\
             int  : /-?[0-9]+/ ; \
@@ -35,27 +25,28 @@ void parser_init() {
             expr    : <int> | <symbol> | <s_expr> | <list> ;\
             misp    : /^/ <expr>* /$/ ;\
             ",
-              Int, Symbol, S_Expr, List, Expr, Misp);
+              p->Int, p->Symbol, p->S_Expr, p->List, p->Expr, p->Misp);
 
-    already_cleanup = false;
-    already_init = true;
+    return p;
 }
 
-parse_result_t *parse_str_to_ast(const char *str) {
+parse_result *parse_str_to_ast(parser *p, const char *str) {
     mpc_result_t *r = (mpc_result_t *)malloc(sizeof(mpc_result_t));
-    parse_result_t *p_res = (parse_result_t *)malloc(sizeof(parse_result_t));
     if (r == NULL) return NULL;
+
+    parse_result *p_res = (parse_result *)malloc(sizeof(parse_result));
     if (p_res == NULL) {
         free(r);
         return NULL;
     }
-    p_res->no_err_occurred = mpc_parse("<stdin>", str, Misp, r) == 1;
+
+    p_res->no_err_occurred = mpc_parse("<stdin>", str, p->Misp, r) == 1;
     p_res->r = r;
 
     return p_res;
 }
 
-void parse_res_cleanup(parse_result_t *p_res) {
+void parse_res_cleanup(parse_result *p_res) {
     assert(p_res != NULL);
     if (p_res->no_err_occurred)
         mpc_ast_delete(p_res->r->output);
@@ -64,10 +55,7 @@ void parse_res_cleanup(parse_result_t *p_res) {
     free(p_res);
 }
 
-void parser_cleanup() {
-    assert(already_init == true);
-    assert(already_cleanup == false);
-    mpc_cleanup(6, Int, Symbol, S_Expr, List, Expr, Misp);
-    already_init = false;
-    already_cleanup = true;
+void delete_parser(parser *p) {
+    mpc_cleanup(6, p->Int, p->Symbol, p->S_Expr, p->List, p->Expr, p->Misp);
+    free(p);
 }

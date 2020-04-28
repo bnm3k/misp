@@ -22,11 +22,11 @@ void deallocate_value(Value *vp) {
     Value *child;
     switch (vp->type) {
         /* sym vals freed once, at end of program from sym_table, NIL is singleton */
-    case IS_SYMBOL:
     case IS_NIL:
         return;
     case IS_INT:
         break;
+    case IS_SYMBOL:
     case IS_ERROR:
         free(vp->content.str);
         break;
@@ -48,31 +48,26 @@ Value *make_int(long n) {
     return v;
 }
 
-/**
- * 
-*/
-KHASH_MAP_INIT_STR(sym, Value *)
-Value *make_sym(const char *s) {
-    /*
-     *  TODO move init for sym_table to overall evaluator init fn 
-     *  plus also destroy for khash table
-    */
-    static khash_t(sym) *sym_table = NULL;
-    if (sym_table == NULL) sym_table = kh_init(sym);
+Value *make_sym(const char *sym_str) {
+    Value *val_sym = allocate_value();
+    val_sym->type = IS_SYMBOL;
+    val_sym->content.str = strdup(sym_str);
+    return val_sym;
+}
+
+Value *make_sym_interned(khash_t(sym_table) * st, const char *sym_str) {
+    if (st == NULL) return make_sym(sym_str);
 
     Value *val_sym = NULL;
-    khint_t it = kh_get(sym, sym_table, s);
-    /* if val not present, allocate and insert first*/
-    if (it == kh_end(sym_table)) {
+    khint_t it = kh_get(sym_table, st, sym_str);
+    if (it == kh_end(st)) {
         int ret;
-        val_sym = allocate_value();
-        val_sym->type = IS_SYMBOL;
-        val_sym->content.sym = strdup(s);
-        it = kh_put(sym, sym_table, s, &ret);
-        kh_val(sym_table, it) = val_sym;
-    } else {
-        val_sym = kh_val(sym_table, it);
-    }
+        val_sym = make_sym(sym_str);
+        it = kh_put(sym_table, st, sym_str, &ret);
+        kh_val(st, it) = val_sym;
+    } else
+        val_sym = kh_val(st, it);
+
     return val_sym;
 }
 
@@ -177,8 +172,6 @@ int stringify_val(char *buf, int buf_len, const Value *v, const char *sep) {
         total_chars_written = snprintf(buf, buf_len, "%ld%s", v->content.integer, sep);
         break;
     case IS_SYMBOL:
-        total_chars_written = snprintf(buf, buf_len, "%s%s", v->content.sym, sep);
-        break;
     case IS_ERROR:
         total_chars_written = snprintf(buf, buf_len, "%s%s", v->content.str, sep);
         break;

@@ -7,6 +7,7 @@
 #ifndef _VAL_H_
 #define _VAL_H_
 
+#include "khash.h"
 #include "list.h"
 #include <stdbool.h>
 #include <stdlib.h>
@@ -22,7 +23,6 @@ enum val_type {
 
 union val_content {
     long integer;
-    const char *sym;
     char *str;
     List *list;
 };
@@ -35,10 +35,12 @@ typedef struct Value {
 static Value NIL_VAL = {IS_NIL, {0}};
 static Value *const NIL = &NIL_VAL;
 
+KHASH_MAP_INIT_STR(sym_table, Value *)
+
 /* for creating misp values */
 Value *make_int(long n);
-Value *make_sym(const char *s);
-Value *make_err(const char *s);
+Value *make_sym_interned(khash_t(sym_table) * st, const char *str);
+Value *make_err(const char *str);
 Value *make_list();
 Value *make_s_expr();
 void deallocate_value(Value *vp);
