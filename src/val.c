@@ -25,6 +25,7 @@ void deallocate_value(Value *vp) {
     case IS_NIL:
         return;
     case IS_INT:
+    case IS_FN:
         break;
     case IS_SYMBOL:
     case IS_ERROR:
@@ -48,11 +49,18 @@ Value *make_int(long n) {
     return v;
 }
 
-Value *make_sym(const char *sym_str) {
+static Value *make_sym(const char *sym_str) {
     Value *val_sym = allocate_value();
     val_sym->type = IS_SYMBOL;
     val_sym->content.str = strdup(sym_str);
     return val_sym;
+}
+
+Value *make_fn(builtin_fn fn) {
+    Value *val_fn = allocate_value();
+    val_fn->type = IS_FN;
+    val_fn->content.fn = fn;
+    return val_fn;
 }
 
 Value *make_sym_interned(khash_t(sym_table) * st, const char *sym_str) {
@@ -89,6 +97,30 @@ Value *make_s_expr() {
     Value *v = make_list();
     v->type = IS_S_EXPR;
     return v;
+}
+
+Value *make_val_deep_copy(const Value *v) {
+    Value *copy, *child;
+    switch (v->type) {
+    case IS_NIL:
+    case IS_SYMBOL:
+        return (Value *)v;
+    case IS_INT:
+        return make_int(v->content.integer);
+    case IS_ERROR:
+        return make_err(v->content.str);
+    case IS_FN:
+        return make_fn(v->content.fn);
+    case IS_LIST:
+    case IS_S_EXPR:
+        copy = make_list();
+        list_foreach(v->content.list, child, {
+            list_push_to_back(copy->content.list, make_val_deep_copy(child));
+        });
+        copy->type = v->type == IS_LIST ? IS_LIST : IS_S_EXPR;
+        return copy;
+        break;
+    }
 }
 
 /*
@@ -168,6 +200,9 @@ int stringify_val(char *buf, int buf_len, const Value *v, const char *sep) {
     case IS_NIL:
         total_chars_written = snprintf(buf, buf_len, "NIL%s", sep);
         break;
+    case IS_FN:
+        total_chars_written = snprintf(buf, buf_len, "<function>%s", sep);
+        break;
     case IS_INT:
         total_chars_written = snprintf(buf, buf_len, "%ld%s", v->content.integer, sep);
         break;
@@ -206,4 +241,10 @@ int stringify_val(char *buf, int buf_len, const Value *v, const char *sep) {
     buf_len = buf_len - total_chars_written;
     if (buf_len <= 0) return -1;
     return total_chars_written;
+}
+
+void print_val(const Value *val) {
+    static char buf[1024];
+    int chars_written = stringify_val(buf, sizeof(buf), val, "");
+    printf("%s%s\n", buf, chars_written < 0 ? "..." : "");
 }

@@ -1,3 +1,4 @@
+#include "../include/debug.h"
 #include "../include/list.h"
 #include "../include/val.h"
 #include "test_include/unity.h"
@@ -167,10 +168,59 @@ void test_list_shallow_copy(void) {
     delete_list(l2);
 }
 
+void test_list_mut_elems_directly(void) {
+    const int items_to_insert = 15;
+    List *l = new_list();
+
+    TEST_ASSERT_EQUAL_INT(0, l->curr_size);
+    void **vpp;
+    list_foreach_mut(l, vpp, {
+        TEST_ASSERT_TRUE_MESSAGE(false, "list has zero items yet iteration occured");
+    });
+
+    /* insert 1 item and mut it directly */
+    list_push_to_front(l, make_int(900));
+    TEST_ASSERT_EQUAL_INT(1, l->curr_size);
+    int iter_times = 0;
+    Value *num_val = NIL;
+    list_foreach_mut(l, vpp, {
+        num_val = *vpp;
+        *vpp = NIL;
+        iter_times++;
+    });
+    TEST_ASSERT_EQUAL_INT_MESSAGE(1, iter_times, "iter should have been only once since only 1 item added");
+    TEST_ASSERT_EQUAL_PTR(NIL, list_get_head(l));
+    deallocate_value(num_val);
+    list_pop_from_front(l);
+    TEST_ASSERT_EQUAL_INT(0, l->curr_size);
+
+    for (int i = 0; i < items_to_insert; i++) {
+        list_push_to_back(l, make_int(i));
+    }
+    TEST_ASSERT_EQUAL_INT(items_to_insert, l->curr_size);
+
+    /* iter from back to front */
+    iter_times = 0;
+    list_foreach_mut(l, vpp, {
+        deallocate_value(*vpp);
+        *vpp = NIL;
+        iter_times++;
+    });
+    TEST_ASSERT_EQUAL_INT(items_to_insert, iter_times);
+    Value *curr_list_elem;
+
+    list_foreach(l, curr_list_elem, {
+        TEST_ASSERT_EQUAL_PTR(NIL, curr_list_elem);
+    });
+
+    delete_list(l);
+}
+
 void test_list(void) {
     RUN_TEST(test_list_basics);
     RUN_TEST(test_list_insert_100_items_from_back);
     RUN_TEST(test_list_insert_100_items_from_front);
     RUN_TEST(test_list_pop_items);
     RUN_TEST(test_list_shallow_copy);
+    RUN_TEST(test_list_mut_elems_directly);
 }

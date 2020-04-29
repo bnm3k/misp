@@ -1,5 +1,7 @@
 #include "../include/evaluator.h"
+#include "../include/debug.h"
 #include "../include/environment.h"
+#include "../include/list.h"
 #include "../include/mpc.h"
 #include "../include/parser.h"
 #include "../include/val.h"
@@ -36,7 +38,8 @@ Value *ast_to_val(khash_t(sym_table) * st, const mpc_ast_t *t) {
         l = make_s_expr();
     if (strstr(t->tag, "list"))
         l = make_list();
-    for (int i = 0; i < t->children_num; i--) {
+
+    for (int i = 0; i < t->children_num; i++) {
         if (strcmp(t->children[i]->contents, "(") == 0) continue;
         if (strcmp(t->children[i]->contents, ")") == 0) continue;
         if (strcmp(t->children[i]->contents, "'(") == 0) continue;
@@ -47,28 +50,73 @@ Value *ast_to_val(khash_t(sym_table) * st, const mpc_ast_t *t) {
     return l;
 }
 
+Value *evaluate_s_expr(environment *env, Value *s_expr_val) {
+    assert(s_expr_val->type == IS_S_EXPR);
+    /* return empty list as is, no need to evaluate */
+    if (list_get_count(s_expr_val->content.list) == 0) return s_expr_val;
+    /*
+     * evaluate children first, if err encountered, stop evaluation
+     * delete list plus children and return error value;
+    */
+    void **vpp;
+    Value *child = NIL;
+    List *list = s_expr_val->content.list;
+    list_foreach_mut(list, vpp, {
+        child = evaluate_val(env, *vpp);
+        if (child->type == IS_ERROR) {
+            Value *err = make_val_deep_copy(child);
+            deallocate_value(s_expr_val);
+            return err;
+        } else {
+            *vpp = child; /* set list_elem to evaluated child */
+        }
+    });
+
+    /* if s_expr has only one child, return that child as is */
+    Value *head = list_pop_from_front(list);
+    if (list_get_count(list) == 0) {
+        deallocate_value(s_expr_val);
+        return head;
+    }
+
+    /* s_expr has more than 1 child */
+    if (head->type != IS_FN) {
+        deallocate_value(head);
+        deallocate_value(s_expr_val);
+        return make_err("S-expression does not start with function");
+    }
+
+    /* call builtin with operator */
+    deallocate_value(head);
+    deallocate_value(s_expr_val);
+
+    return NIL;
+}
+
 Value *evaluate_val(environment *env, Value *v) {
     Value *res;
     switch (v->type) {
     case IS_NIL:
     case IS_INT:
     case IS_ERROR:
+    case IS_FN:
     case IS_LIST:
         return v;
     case IS_SYMBOL:
-        /* probably should check if NIL is returned */
         res = env_get(env, v);
         return res == NIL ? make_err("Unbound symbol") : res;
     case IS_S_EXPR:
-        return v;
+        return evaluate_s_expr(env, v);
     };
 }
 Value *read_evaluate(evaluator *ev, const char *str) {
     Value *res;
     parse_result *p_res = parse_str_to_ast(ev->parser, str);
+
     if (p_res->no_err_occurred) {
         Value *intermediate = ast_to_val(ev->sym_table, p_res->r->output);
         res = evaluate_val(ev->global_env, intermediate);
+
     } else {
         res = make_err("syntax error");
     }

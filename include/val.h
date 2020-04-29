@@ -18,13 +18,19 @@ enum val_type {
     IS_SYMBOL,
     IS_ERROR,
     IS_LIST,
+    IS_FN,
     IS_S_EXPR
 };
+
+typedef struct Value Value;
+typedef struct environment environment;
+typedef Value *(*builtin_fn)(environment *env, Value *v);
 
 union val_content {
     long integer;
     char *str;
     List *list;
+    builtin_fn fn;
 };
 
 typedef struct Value {
@@ -43,6 +49,7 @@ Value *make_sym_interned(khash_t(sym_table) * st, const char *str);
 Value *make_err(const char *str);
 Value *make_list();
 Value *make_s_expr();
+Value *make_val_deep_copy(const Value *v);
 void deallocate_value(Value *vp);
 
 /* lisp/expr methods */
@@ -52,5 +59,6 @@ Value *builtin_list_head(const Value *l);
 Value *builtin_list_rest(Value *l);
 
 int stringify_val(char *buf, int buf_len, const Value *v, const char *sep);
+void print_val(const Value *val);
 
 #endif
