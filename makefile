@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -std=c11 -Wall -Wextra -Werror  -pedantic 
-LIBS = 
+LIBS = -ledit
 
 INCLUDE_DIR = include
 SRC_DIR = src
