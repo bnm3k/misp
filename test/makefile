@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic 
+CFLAGS = -Wall -Wextra -Werror -std=c11 -pedantic 
 LIBS = 
 
 MAIN_OBJS_DIR = ../build/.objs
