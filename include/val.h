@@ -45,10 +45,11 @@ KHASH_MAP_INIT_STR(sym_table, Value *)
 
 /* for creating misp values */
 Value *make_int(long n);
-Value *make_sym_interned(khash_t(sym_table) * st, const char *str);
+Value *make_sym(const char *str);
 Value *make_err(const char *str);
 Value *make_list();
 Value *make_s_expr();
+Value *make_fn(builtin_fn fn);
 Value *make_val_deep_copy(const Value *v);
 void deallocate_value(Value *vp);
 

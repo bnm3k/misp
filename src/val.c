@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "../include/debug.h"
-#include "../include/khash.h"
 #include "../include/list.h"
 #include "../include/val.h"
 
@@ -49,13 +48,6 @@ Value *make_int(long n) {
     return v;
 }
 
-static Value *make_sym(const char *sym_str) {
-    Value *val_sym = allocate_value();
-    val_sym->type = IS_SYMBOL;
-    val_sym->content.str = strdup(sym_str);
-    return val_sym;
-}
-
 Value *make_fn(builtin_fn fn) {
     Value *val_fn = allocate_value();
     val_fn->type = IS_FN;
@@ -63,19 +55,10 @@ Value *make_fn(builtin_fn fn) {
     return val_fn;
 }
 
-Value *make_sym_interned(khash_t(sym_table) * st, const char *sym_str) {
-    if (st == NULL) return make_sym(sym_str);
-
-    Value *val_sym = NULL;
-    khint_t it = kh_get(sym_table, st, sym_str);
-    if (it == kh_end(st)) {
-        int ret;
-        val_sym = make_sym(sym_str);
-        it = kh_put(sym_table, st, sym_str, &ret);
-        kh_val(st, it) = val_sym;
-    } else
-        val_sym = kh_val(st, it);
-
+Value *make_sym(const char *sym_str) {
+    Value *val_sym = allocate_value();
+    val_sym->type = IS_SYMBOL;
+    val_sym->content.str = strdup(sym_str);
     return val_sym;
 }
 
