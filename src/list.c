@@ -72,7 +72,7 @@ void list_push_to_back(List *l, void *vp) {
     l->elements[l->last] = vp;
 }
 void *list_pop_from_front(List *l) {
-    assert(l->curr_size <= l->capacity);
+    assert(l->curr_size <= l->capacity && l->curr_size > 0);
     void *popped = l->elements[l->first];
     l->elements[l->first] = NULL; /* clear pos. shouldn't be necessary */
     l->first = MOD((l->first + 1), l->capacity);
@@ -81,7 +81,7 @@ void *list_pop_from_front(List *l) {
     return popped;
 }
 void *list_pop_from_back(List *l) {
-    assert(l->curr_size <= l->capacity);
+    assert(l->curr_size <= l->capacity && l->curr_size > 0);
     void *popped = l->elements[l->last];
     l->elements[l->last] = NULL; /* clear pos. shouldn't be necessary */
     l->last = MOD((l->last - 1), l->capacity);
