@@ -43,7 +43,8 @@ Value *ast_to_val(const mpc_ast_t *t) {
     for (int i = 0; i < t->children_num; i++) {
         if (strcmp(t->children[i]->contents, "(") == 0) continue;
         if (strcmp(t->children[i]->contents, ")") == 0) continue;
-        if (strcmp(t->children[i]->contents, "'(") == 0) continue;
+        if (strcmp(t->children[i]->contents, "}") == 0) continue;
+        if (strcmp(t->children[i]->contents, "{") == 0) continue;
         if (strcmp(t->children[i]->tag, "regex") == 0) continue;
         builtin_list_push_to_back(l, ast_to_val(t->children[i]));
     }
@@ -121,19 +122,25 @@ Value *read_evaluate(evaluator *ev, const char *str) {
 
 Value *builtin_def(environment *env, Value *v) {
     assert(v->type == IS_S_EXPR);
-    print_val(v);
-    Value *val1 = list_pop_from_front(v->content.list);
-    Value *val2 = list_pop_from_front(v->content.list);
-    /* def on single value */
-    if (val1->type == IS_SYMBOL) {
-        env_set(env, val1, val2);
-    } else {
-
-        deallocate_value(val1);
-        deallocate_value(val2);
-        val1 = make_err("ERROR: invalid attempt to bind value to non-symbol value");
+    Value *syms = list_pop_from_front(v->content.list);
+    assert(syms->type == IS_Q_EXPR);
+    if (list_get_count(syms->content.list) != list_get_count(v->content.list)) {
+        deallocate_value(syms);
+        return make_err("ERROR: symbol list count should match values");
     }
-    return val1;
+    Value *sym_val;
+    list_foreach(syms->content.list, sym_val, {
+        if (sym_val->type != IS_SYMBOL) {
+            deallocate_value(syms);
+            return make_err("ERROR: invalid attempt to bind value to non-symbol");
+        }
+    });
+    list_foreach(syms->content.list, sym_val, {
+        env_set(env, sym_val, list_pop_from_front(v->content.list));
+    });
+    deallocate_value(syms);
+
+    return NIL;
 }
 
 void evaluator_add_builtin(environment *env, const char *name, builtin_fn fn) {

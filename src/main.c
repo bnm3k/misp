@@ -14,7 +14,7 @@ int main(void) {
     evaluator *ev = new_evaluator();
 
     while (true) {
-        char *input = readline("\nmisp> ");
+        char *input = readline("\nmisp > ");
         add_history(input);
 
         Value *res = read_evaluate(ev, input);

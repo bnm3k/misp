@@ -18,7 +18,7 @@ parser *new_parser() {
     p->Misp = mpc_new("misp");
 
     mpca_lang(MPCA_LANG_DEFAULT, "\
-            int  : /-?[0-9]+/ ; \
+            int     : /-?[0-9]+/ ; \
             symbol  : /[a-zA-Z0-9_+\\-*\\/\\\\=<>!&]+/ ;\
             s_expr  : '(' <expr>* ')' ;\
             q_expr  : '{' <expr>* '}' ;\
