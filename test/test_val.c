@@ -37,33 +37,32 @@ void test_stringify_val_sufficient_buf_size_lists(void) {
     char buf[128];
     int buf_len = sizeof(buf);
     int chars_written;
-    Value *l1 = make_list();
+    Value *l1 = make_q_expr();
     Value *l2 = make_s_expr();
 
     /* test empty lists and expressions */
     chars_written = stringify_val(buf, buf_len, l1, NULL);
-
-    TEST_ASSERT_EQUAL_INT(3, chars_written);
-    TEST_ASSERT_EQUAL_STRING("'()", buf);
-    chars_written = stringify_val(buf, buf_len, l2, NULL);
+    TEST_ASSERT_EQUAL_STRING("{}", buf);
     TEST_ASSERT_EQUAL_INT(2, chars_written);
+    chars_written = stringify_val(buf, buf_len, l2, NULL);
     TEST_ASSERT_EQUAL_STRING(buf, "()");
+    TEST_ASSERT_EQUAL_INT(2, chars_written);
 
     /* test non-empty list */
     builtin_list_push_to_front(l1, make_int(1));
     builtin_list_push_to_front(l1, make_int(2));
     builtin_list_push_to_front(l1, make_int(3));
     chars_written = stringify_val(buf, buf_len, l1, NULL);
-    TEST_ASSERT_EQUAL_INT(8, chars_written);
-    TEST_ASSERT_EQUAL_STRING(buf, "'(3 2 1)");
+    TEST_ASSERT_EQUAL_STRING(buf, "{3 2 1}");
+    TEST_ASSERT_EQUAL_INT(7, chars_written);
 
     /* test non-empty expr */
     builtin_list_push_to_front(l2, l1);
     builtin_list_push_to_front(l2, make_sym("+"));
     builtin_list_push_to_front(l2, make_sym("map"));
     chars_written = stringify_val(buf, buf_len, l2, NULL);
-    TEST_ASSERT_EQUAL_INT(chars_written, 16);
-    TEST_ASSERT_EQUAL_STRING(buf, "(map + '(3 2 1))");
+    TEST_ASSERT_EQUAL_INT(chars_written, 15);
+    TEST_ASSERT_EQUAL_STRING(buf, "(map + {3 2 1})");
     deallocate_value(l2);
 }
 

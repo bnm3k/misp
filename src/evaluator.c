@@ -37,8 +37,8 @@ Value *ast_to_val(const mpc_ast_t *t) {
     Value *l;
     if (strcmp(t->tag, ">") == 0 || strstr(t->tag, "s_expr"))
         l = make_s_expr();
-    if (strstr(t->tag, "list"))
-        l = make_list();
+    if (strstr(t->tag, "q_expr"))
+        l = make_q_expr();
 
     for (int i = 0; i < t->children_num; i++) {
         if (strcmp(t->children[i]->contents, "(") == 0) continue;
@@ -87,7 +87,7 @@ Value *evaluate_val(environment *env, Value *v) {
     case IS_INT:
     case IS_ERROR:
     case IS_FN:
-    case IS_LIST:
+    case IS_Q_EXPR:
         return v;
     case IS_SYMBOL:
         res = env_get(env, v);

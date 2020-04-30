@@ -7,7 +7,6 @@
 #ifndef _VAL_H_
 #define _VAL_H_
 
-#include "khash.h"
 #include "list.h"
 #include <stdbool.h>
 #include <stdlib.h>
@@ -17,8 +16,8 @@ enum val_type {
     IS_INT,
     IS_SYMBOL,
     IS_ERROR,
-    IS_LIST,
     IS_FN,
+    IS_Q_EXPR,
     IS_S_EXPR
 };
 
@@ -40,13 +39,11 @@ typedef struct Value {
 
 extern Value *const NIL;
 
-KHASH_MAP_INIT_STR(sym_table, Value *)
-
 /* for creating misp values */
 Value *make_int(long n);
 Value *make_sym(const char *str);
 Value *make_err(const char *str);
-Value *make_list();
+Value *make_q_expr();
 Value *make_s_expr();
 Value *make_fn(builtin_fn fn);
 Value *make_val_deep_copy(const Value *v);

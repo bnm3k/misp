@@ -35,7 +35,7 @@ typedef struct parser {
     mpc_parser_t *Int;
     mpc_parser_t *Symbol;
     mpc_parser_t *S_Expr;
-    mpc_parser_t *List;
+    mpc_parser_t *Q_Expr;
     mpc_parser_t *Expr;
     mpc_parser_t *Misp;
 } parser;

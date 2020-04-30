@@ -13,7 +13,7 @@ parser *new_parser() {
     p->Int = mpc_new("int");
     p->Symbol = mpc_new("symbol");
     p->S_Expr = mpc_new("s_expr");
-    p->List = mpc_new("list");
+    p->Q_Expr = mpc_new("q_expr");
     p->Expr = mpc_new("expr");
     p->Misp = mpc_new("misp");
 
@@ -21,11 +21,11 @@ parser *new_parser() {
             int  : /-?[0-9]+/ ; \
             symbol  : /[a-zA-Z0-9_+\\-*\\/\\\\=<>!&]+/ ;\
             s_expr  : '(' <expr>* ')' ;\
-            list    : \"'(\" <expr>* ')' ;\
-            expr    : <int> | <symbol> | <s_expr> | <list> ;\
+            q_expr  : '{' <expr>* '}' ;\
+            expr    : <int> | <symbol> | <s_expr> | <q_expr> ;\
             misp    : /^/ <expr>* /$/ ;\
             ",
-              p->Int, p->Symbol, p->S_Expr, p->List, p->Expr, p->Misp);
+              p->Int, p->Symbol, p->S_Expr, p->Q_Expr, p->Expr, p->Misp);
 
     return p;
 }
@@ -56,6 +56,6 @@ void parse_res_cleanup(parse_result *p_res) {
 }
 
 void delete_parser(parser *p) {
-    mpc_cleanup(6, p->Int, p->Symbol, p->S_Expr, p->List, p->Expr, p->Misp);
+    mpc_cleanup(6, p->Int, p->Symbol, p->S_Expr, p->Q_Expr, p->Expr, p->Misp);
     free(p);
 }

@@ -33,7 +33,7 @@ void deallocate_value(Value *vp) {
     case IS_ERROR:
         free(vp->content.str);
         break;
-    case IS_LIST:
+    case IS_Q_EXPR:
     case IS_S_EXPR:
         list_foreach(vp->content.list, child, {
             deallocate_value(child);
@@ -72,16 +72,17 @@ Value *make_err(const char *s) {
     return v;
 }
 
-Value *make_list() {
+Value *make_q_expr() {
     Value *v = allocate_value();
-    v->type = IS_LIST;
+    v->type = IS_Q_EXPR;
     v->content.list = new_list();
     return v;
 }
 
 Value *make_s_expr() {
-    Value *v = make_list();
+    Value *v = allocate_value();
     v->type = IS_S_EXPR;
+    v->content.list = new_list();
     return v;
 }
 
@@ -98,24 +99,22 @@ Value *make_val_deep_copy(const Value *v) {
         return make_err(v->content.str);
     case IS_FN:
         return make_fn(v->content.fn);
-    case IS_LIST:
+    case IS_Q_EXPR:
     case IS_S_EXPR:
-        copy = make_list();
+        copy = make_s_expr();
         list_foreach(v->content.list, child, {
             list_push_to_back(copy->content.list, make_val_deep_copy(child));
         });
-        copy->type = (v->type == IS_LIST ? IS_LIST : IS_S_EXPR);
+        copy->type = (v->type == IS_Q_EXPR ? IS_Q_EXPR : IS_S_EXPR);
         return copy;
-        break;
     }
-    printf("$$$$\n");
 }
 
 /*
  * Appends item Value v to front of list l
 */
 Value *builtin_list_push_to_front(Value *l, Value *v) {
-    assert(l->type == IS_LIST || l->type == IS_S_EXPR);
+    assert(l->type == IS_Q_EXPR || l->type == IS_S_EXPR);
     list_push_to_front(l->content.list, v);
     return l;
 }
@@ -124,7 +123,7 @@ Value *builtin_list_push_to_front(Value *l, Value *v) {
  * Appends item Value v to front of list l
 */
 Value *builtin_list_push_to_back(Value *l, Value *v) {
-    assert(l->type == IS_LIST || l->type == IS_S_EXPR);
+    assert(l->type == IS_Q_EXPR || l->type == IS_S_EXPR);
     list_push_to_back(l->content.list, v);
     return l;
 }
@@ -134,7 +133,7 @@ Value *builtin_list_push_to_back(Value *l, Value *v) {
  * Does not modify rest of list
 */
 Value *builtin_list_head(const Value *l) {
-    assert(l->type == IS_LIST || l->type == IS_S_EXPR);
+    assert(l->type == IS_Q_EXPR || l->type == IS_S_EXPR);
     return list_get_head(l->content.list);
 }
 
@@ -145,7 +144,7 @@ Value *builtin_list_head(const Value *l) {
  * empty list, ie list whose only value is NIL
 */
 Value *builtin_list_rest(Value *l) {
-    assert(l->type == IS_LIST || l->type == IS_S_EXPR);
+    assert(l->type == IS_Q_EXPR || l->type == IS_S_EXPR);
     assert(list_get_count(l->content.list) > 0);
     Value *popped = list_pop_from_front(l->content.list);
     deallocate_value(popped);
@@ -199,8 +198,8 @@ int stringify_val(char *buf, int buf_len, const Value *v, const char *sep) {
         total_chars_written = snprintf(buf, buf_len, "%s%s", sep, v->content.str);
         break;
     case IS_S_EXPR:
-    case IS_LIST:
-        total_chars_written = snprintf(buf, buf_len, "%s%s", sep, v->type == IS_S_EXPR ? "(" : "'(");
+    case IS_Q_EXPR:
+        total_chars_written = snprintf(buf, buf_len, "%s%s", sep, v->type == IS_S_EXPR ? "(" : "{");
         buf_len = buf_len - total_chars_written;
         int chars_written = 0;
         /*
@@ -222,7 +221,7 @@ int stringify_val(char *buf, int buf_len, const Value *v, const char *sep) {
             buf_len = buf_len - chars_written;
             total_chars_written += chars_written;
         });
-        total_chars_written += snprintf(buf + total_chars_written, buf_len, ")");
+        total_chars_written += snprintf(buf + total_chars_written, buf_len, "%s", v->type == IS_S_EXPR ? ")" : "}");
         break;
     }
     buf_len = buf_len - total_chars_written;

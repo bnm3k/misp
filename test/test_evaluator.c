@@ -4,16 +4,11 @@
 
 void test_evaluator_stuff(void) {
     evaluator *ev = new_evaluator();
-    Value *sym, *res;
-
-    sym = make_sym("def");
-    res = env_get(ev->global_env, sym);
+    Value *res;
+    res = read_evaluate(ev, "def");
     TEST_ASSERT_TRUE(res->type == IS_FN);
-    deallocate_value(sym);
-
-    // res = read_evaluate(ev, "def");
-    // print_val(res);
-    //TEST_IGNORE_MESSAGE("ensure vals in global_env are deallocated: !** TODO **!");
+    deallocate_value(res);
+    TEST_IGNORE_MESSAGE("ensure vals in global_env are deallocated: !** TODO **!");
     delete_evaluator(ev);
 }
 

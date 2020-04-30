@@ -20,7 +20,7 @@ void test_parser_valid_inputs(void) {
         "1", "()", "NIL",
         "(+ 1 2 3)",
         "+ 5 (* 2 2)",
-        "(map - '(1 2 3 4))"};
+        "(map - {1 2 3 4})"};
     for (unsigned i = 0; i < valid_inputs_len; i++) {
         test_single_input_validity(p, valid_inputs[i], true);
     }
