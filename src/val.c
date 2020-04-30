@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,6 +11,27 @@
 
 static Value NIL_VAL = {IS_NIL, {0}};
 Value *const NIL = &NIL_VAL;
+
+char *val_type_str(enum val_type t) {
+    switch (t) {
+    case IS_NIL:
+        return "Nil";
+    case IS_FN:
+        return "Function";
+    case IS_INT:
+        return "Integer";
+    case IS_ERROR:
+        return "Error";
+    case IS_SYMBOL:
+        return "Symbol";
+    case IS_S_EXPR:
+        return "S-Expression";
+    case IS_Q_EXPR:
+        return "Q-Expression";
+    default:
+        return "Unknown";
+    }
+}
 
 Value *allocate_value() {
     Value *vp = malloc(sizeof(Value));
@@ -65,10 +87,14 @@ Value *make_sym(const char *sym_str) {
     return val_sym;
 }
 
-Value *make_err(const char *s) {
+Value *make_err(const char *fmt, ...) {
+    static char buf[512];
+    va_list va;
+    va_start(va, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, va);
     Value *v = allocate_value();
     v->type = IS_ERROR;
-    v->content.str = strdup(s);
+    v->content.str = strdup(buf);
     return v;
 }
 

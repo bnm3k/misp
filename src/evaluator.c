@@ -28,7 +28,7 @@ Value *ast_to_val(const mpc_ast_t *t) {
     if (strstr(t->tag, "int")) {
         errno = 0;
         long n = strtol(t->contents, NULL, 10);
-        return errno != ERANGE ? make_int(n) : make_err("ERROR: invalid number");
+        return errno != ERANGE ? make_int(n) : make_err("ERROR: invalid number %s", t->contents);
     }
 
     if (strstr(t->tag, "symbol")) return make_sym(t->contents);
@@ -93,7 +93,7 @@ Value *evaluate_val(environment *env, Value *v) {
     case IS_SYMBOL:
         res = env_get(env, v);
         if (res == NULL)
-            return make_err("ERROR: Unbound symbol");
+            return make_err("ERROR: Unbound symbol '%s'", v->content.str);
         else
             return make_val_deep_copy(res);
     case IS_S_EXPR:
@@ -108,7 +108,7 @@ Value *read_evaluate(evaluator *ev, const char *str) {
         Value *intermediate = ast_to_val(p_res->r->output);
         res = evaluate_val(ev->global_env, intermediate);
     } else {
-        res = make_err("ERROR: syntax error");
+        res = make_err("ERROR: syntax error\n%s", mpc_err_string(p_res->r->error));
     }
     parse_res_cleanup(p_res);
     return res;
@@ -122,17 +122,23 @@ Value *read_evaluate(evaluator *ev, const char *str) {
 
 Value *builtin_def(environment *env, Value *v) {
     assert(v->type == IS_S_EXPR);
+    enum val_type t;
     Value *syms = list_pop_from_front(v->content.list);
-    assert(syms->type == IS_Q_EXPR);
+    t = syms->type;
+    if (syms->type != IS_Q_EXPR) {
+        deallocate_value(syms);
+        return make_err("Invalid argument of type '%s' to def. Should be q-expression", val_type_str(t));
+    }
     if (list_get_count(syms->content.list) != list_get_count(v->content.list)) {
         deallocate_value(syms);
         return make_err("ERROR: symbol list count should match values");
     }
     Value *sym_val, *prev;
     list_foreach(syms->content.list, sym_val, {
-        if (sym_val->type != IS_SYMBOL) {
+        t = sym_val->type;
+        if (t != IS_SYMBOL) {
             deallocate_value(syms);
-            return make_err("ERROR: invalid attempt to bind value to non-symbol");
+            return make_err("ERROR: invalid attempt to bind value to non-symbol of type: '%s'", val_type_str(t));
         }
     });
     list_foreach(syms->content.list, sym_val, {
