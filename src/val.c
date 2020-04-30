@@ -8,6 +8,9 @@
 #include "../include/list.h"
 #include "../include/val.h"
 
+static Value NIL_VAL = {IS_NIL, {0}};
+Value *const NIL = &NIL_VAL;
+
 Value *allocate_value() {
     Value *vp = malloc(sizeof(Value));
     if (vp == NULL) {
@@ -20,7 +23,7 @@ Value *allocate_value() {
 void deallocate_value(Value *vp) {
     Value *child;
     switch (vp->type) {
-        /* sym vals freed once, at end of program from sym_table, NIL is singleton */
+        /* NIL is singleton */
     case IS_NIL:
         return;
     case IS_INT:
@@ -86,10 +89,11 @@ Value *make_val_deep_copy(const Value *v) {
     Value *copy, *child;
     switch (v->type) {
     case IS_NIL:
-    case IS_SYMBOL:
         return (Value *)v;
     case IS_INT:
         return make_int(v->content.integer);
+    case IS_SYMBOL:
+        return make_sym(v->content.str);
     case IS_ERROR:
         return make_err(v->content.str);
     case IS_FN:
@@ -100,10 +104,11 @@ Value *make_val_deep_copy(const Value *v) {
         list_foreach(v->content.list, child, {
             list_push_to_back(copy->content.list, make_val_deep_copy(child));
         });
-        copy->type = v->type == IS_LIST ? IS_LIST : IS_S_EXPR;
+        copy->type = (v->type == IS_LIST ? IS_LIST : IS_S_EXPR);
         return copy;
         break;
     }
+    printf("$$$$\n");
 }
 
 /*
@@ -181,24 +186,23 @@ int stringify_val(char *buf, int buf_len, const Value *v, const char *sep) {
     int total_chars_written;
     switch (v->type) {
     case IS_NIL:
-        total_chars_written = snprintf(buf, buf_len, "NIL%s", sep);
+        total_chars_written = snprintf(buf, buf_len, "%sNIL", sep);
         break;
     case IS_FN:
-        total_chars_written = snprintf(buf, buf_len, "<function>%s", sep);
+        total_chars_written = snprintf(buf, buf_len, "%s<function>", sep);
         break;
     case IS_INT:
-        total_chars_written = snprintf(buf, buf_len, "%ld%s", v->content.integer, sep);
+        total_chars_written = snprintf(buf, buf_len, "%s%ld", sep, v->content.integer);
         break;
     case IS_SYMBOL:
     case IS_ERROR:
-        total_chars_written = snprintf(buf, buf_len, "%s%s", v->content.str, sep);
+        total_chars_written = snprintf(buf, buf_len, "%s%s", sep, v->content.str);
         break;
     case IS_S_EXPR:
     case IS_LIST:
-        total_chars_written = snprintf(buf, buf_len, "%s", v->type == IS_S_EXPR ? "(" : "'(");
+        total_chars_written = snprintf(buf, buf_len, "%s%s", sep, v->type == IS_S_EXPR ? "(" : "'(");
         buf_len = buf_len - total_chars_written;
         int chars_written = 0;
-        sep = " ";
         /*
          * iterate through vals in list/expr and
          * check that recursive call to stringify was succesful
@@ -208,15 +212,15 @@ int stringify_val(char *buf, int buf_len, const Value *v, const char *sep) {
          * calls to snprintf are partial(failed ie not all chars written)
          * if (buf_len <= chars_written) == (buf_len - chars_written <= 0) 
         */
-        Value *c;
+        Value *child;
         int i = 1;
-        list_foreach(v->content.list, c, {
-            if (i == list_get_count(v->content.list)) sep = ""; /* if last elem of list */
+        sep = "";
+        list_foreach(v->content.list, child, {
+            if (i++ > 1) sep = " ";
             if (chars_written < 0 || buf_len <= 0) return -1;
-            chars_written = stringify_val(buf + total_chars_written, buf_len, c, sep);
+            chars_written = stringify_val(buf + total_chars_written, buf_len, child, sep);
             buf_len = buf_len - chars_written;
             total_chars_written += chars_written;
-            i++;
         });
         total_chars_written += snprintf(buf + total_chars_written, buf_len, ")");
         break;

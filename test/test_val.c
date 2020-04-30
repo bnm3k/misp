@@ -43,10 +43,10 @@ void test_stringify_val_sufficient_buf_size_lists(void) {
     /* test empty lists and expressions */
     chars_written = stringify_val(buf, buf_len, l1, NULL);
 
-    TEST_ASSERT_EQUAL_INT(chars_written, 3);
-    TEST_ASSERT_EQUAL_STRING(buf, "'()");
+    TEST_ASSERT_EQUAL_INT(3, chars_written);
+    TEST_ASSERT_EQUAL_STRING("'()", buf);
     chars_written = stringify_val(buf, buf_len, l2, NULL);
-    TEST_ASSERT_EQUAL_INT(chars_written, 2);
+    TEST_ASSERT_EQUAL_INT(2, chars_written);
     TEST_ASSERT_EQUAL_STRING(buf, "()");
 
     /* test non-empty list */
@@ -54,7 +54,7 @@ void test_stringify_val_sufficient_buf_size_lists(void) {
     builtin_list_push_to_front(l1, make_int(2));
     builtin_list_push_to_front(l1, make_int(3));
     chars_written = stringify_val(buf, buf_len, l1, NULL);
-    TEST_ASSERT_EQUAL_INT(chars_written, 8);
+    TEST_ASSERT_EQUAL_INT(8, chars_written);
     TEST_ASSERT_EQUAL_STRING(buf, "'(3 2 1)");
 
     /* test non-empty expr */

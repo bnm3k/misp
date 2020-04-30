@@ -38,8 +38,7 @@ typedef struct Value {
     union val_content content;
 } Value;
 
-static Value NIL_VAL = {IS_NIL, {0}};
-static Value *const NIL = &NIL_VAL;
+extern Value *const NIL;
 
 KHASH_MAP_INIT_STR(sym_table, Value *)
 
