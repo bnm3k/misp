@@ -16,7 +16,7 @@ typedef struct environment {
 environment *new_env(environment *parent);
 void delete_env(environment *env);
 Value *env_get(const environment *env, Value *sym_val);
-void env_set(environment *env, Value *sym_val, Value *v);
+Value *env_set(environment *env, Value *sym_val, Value *v);
 
 #define env_get_parent_env(e) ((list_get_count(e->res_chain_list) >= 1) ? list_get_head(e->res_chain_list) : NULL)
 

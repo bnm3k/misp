@@ -128,7 +128,7 @@ Value *builtin_def(environment *env, Value *v) {
         deallocate_value(syms);
         return make_err("ERROR: symbol list count should match values");
     }
-    Value *sym_val;
+    Value *sym_val, *prev;
     list_foreach(syms->content.list, sym_val, {
         if (sym_val->type != IS_SYMBOL) {
             deallocate_value(syms);
@@ -136,7 +136,8 @@ Value *builtin_def(environment *env, Value *v) {
         }
     });
     list_foreach(syms->content.list, sym_val, {
-        env_set(env, sym_val, list_pop_from_front(v->content.list));
+        prev = env_set(env, sym_val, list_pop_from_front(v->content.list));
+        if (prev) deallocate_value(prev);
     });
     deallocate_value(syms);
 

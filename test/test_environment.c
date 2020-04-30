@@ -58,7 +58,23 @@ void test_environemnt_multiple_layer_resolution(void) {
     delete_env(env1);
 }
 
+void test_environment_replacing(void) {
+    environment *env = new_env(NULL);
+    Value *id = make_sym("foo");
+    Value *n1 = make_int(10);
+    Value *n2 = make_int(20);
+    env_set(env, id, n1);
+    TEST_ASSERT_EQUAL_PTR(n1, env_get(env, id));
+    env_set(env, id, n2);
+    TEST_ASSERT_EQUAL_PTR(n2, env_get(env, id));
+    deallocate_value(id);
+    deallocate_value(n1);
+    deallocate_value(n2);
+    delete_env(env);
+}
+
 void test_environment(void) {
     RUN_TEST(test_environemnt_single_layer_resolution);
+    RUN_TEST(test_environment_replacing);
     RUN_TEST(test_environemnt_multiple_layer_resolution);
 }

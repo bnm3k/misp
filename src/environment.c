@@ -41,12 +41,18 @@ void delete_env(environment *env) {
     }
 }
 
-void env_set(environment *env, Value *sym_val, Value *v) {
-    int absent;
-    khiter_t k = kh_put(sym_to_val, env->htable, sym_val->content.str, &absent);
-    //if (absent)
-    kh_key(env->htable, k) = strdup(sym_val->content.str);
-    kh_val(env->htable, k) = v;
+Value *env_set(environment *env, Value *sym_val, Value *v) {
+    Value *prev = NULL;
+    int ret;
+    khiter_t iter = kh_put(sym_to_val, env->htable, sym_val->content.str, &ret);
+    /* if key already present in table, then kick off previous value */
+    if (ret == 0)
+        prev = kh_val(env->htable, iter);
+    else
+        kh_key(env->htable, iter) = strdup(sym_val->content.str);
+
+    kh_val(env->htable, iter) = v;
+    return prev;
 }
 
 Value *env_get(const environment *env, Value *sym_val) {
